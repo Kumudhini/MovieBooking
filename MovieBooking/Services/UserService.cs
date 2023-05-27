@@ -3,11 +3,11 @@ using MovieBooking.Model;
 
 namespace MovieBooking.Services
 {
-    public class AuthService : IAuthService
+    public class UserService : IUserService
     {
         private IMongoCollection<Register> _movie;
 
-        public AuthService(IDatabaseSetting setting, IMongoClient mongoClient)
+        public UserService(IDatabaseSetting setting, IMongoClient mongoClient)
         {
             var database = mongoClient.GetDatabase(setting.DatabaseName);
             _movie = database.GetCollection<Register>(setting.CollectionName);

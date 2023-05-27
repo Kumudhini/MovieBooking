@@ -11,12 +11,12 @@ using System.Text;
 namespace MovieBooking.Controllers
 {
     [ApiController]
-    public class AuthController : ControllerBase
+    public class UserController : ControllerBase
     {
-        private readonly IAuthService _movieService;
+        private readonly IUserService _movieService;
         private readonly IConfiguration _config;
-        private readonly ILogger<AuthController> _logger;
-        public AuthController(IAuthService movieService, IConfiguration configuration, ILogger<AuthController> logger)
+        private readonly ILogger<UserController> _logger;
+        public UserController(IUserService movieService, IConfiguration configuration, ILogger<UserController> logger)
         {
             _movieService = movieService;
             _config = configuration;

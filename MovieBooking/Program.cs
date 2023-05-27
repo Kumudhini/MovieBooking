@@ -20,7 +20,7 @@ builder.Services.AddSingleton<IDatabaseSetting>(sp =>
 builder.Services.AddSingleton<IMongoClient>(s =>
  new MongoClient(builder.Configuration.GetValue<string>("DatabaseSetting:ConnectionString")));
 
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddControllers();
@@ -43,7 +43,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "MovieBooking",
+        Title = "MovieBookingApp",
         Version = "v1",
     });
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

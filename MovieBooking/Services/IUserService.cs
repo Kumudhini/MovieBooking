@@ -2,7 +2,7 @@
 
 namespace MovieBooking.Services
 {
-    public interface IAuthService
+    public interface IUserService
     {
        public Task<Register> Create(Register register);
        public bool UniqueCheck(string email, string loginid);
