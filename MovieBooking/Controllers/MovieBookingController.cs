@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MovieBooking.Constants;
 using MovieBooking.Model;
 using MovieBooking.Services;
 
@@ -12,15 +13,18 @@ namespace MovieBooking.Controllers
     {
         private readonly IMovieService _movieService;
         private readonly ITicketService _ticketService;
+        private readonly ILogger<MovieBookingController> _logger;
 
-        public MovieBookingController(IMovieService movieService, ITicketService ticketService)
+        public MovieBookingController(IMovieService movieService, ITicketService ticketService, ILogger<MovieBookingController> logger)
         {
             _movieService = movieService;
             _ticketService = ticketService;
+            _logger = logger;
         }
 
-        [Authorize(Roles = "user")]
-        [HttpGet("/api/v{version:apiVersion}/moviebooking/allmovies")]
+        //[Authorize(Roles = "user")]
+        //[HttpGet("/api/v{version:apiVersion}/moviebooking/allmovies")]
+        [HttpGet(RoutingConstant.ViewAllMovies)]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult<Movies>> GetAllMovie()
         {
@@ -29,41 +33,69 @@ namespace MovieBooking.Controllers
                 var data = await _movieService.GetAllMovie();
                 return Ok(data);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest("Error Occured while getting data!");
+                _logger.LogError(ex.Message);
+                return BadRequest(new
+                {
+                    StatusCode = Constant.OkResponse, Response = Constant.ErrorForGetData
+                });
             }
         }
 
-        [Authorize(Roles = "user")]
-        [HttpGet("/api/v{version:apiVersion}/moviebooking/movies/search/{moviename}")]
+        //[Authorize(Roles = "user")]
+        // [HttpGet("/api/v{version:apiVersion}/moviebooking/movies/search/{moviename}")]
+        [HttpGet(RoutingConstant.SearchByMovieName)]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult<Movies>> Search(string moviename)
         {
             try
             {
-                return Ok(await _movieService.Search(moviename));
+                return Ok(new
+                {
+                    StatusCode = Constant.OkResponse,
+                    Response = await _movieService.Search(moviename)
+                });
             }
-            catch(Exception)
+            catch(Exception ex)
             {
-                return BadRequest("Error Occured while searching movie!");
+                _logger.LogError(ex.Message);
+                return BadRequest(new
+                {
+                    StatusCode = Constant.NotFound,
+                    Response = Constant.ErrorForGetData,
+                });
             }
 }
 
-        [Authorize(Roles = "user")]
-        [HttpPost("/api/v{version:apiVersion}/moviebooking/{moviename}/add")]
+        // [Authorize(Roles = "user")]
+        [HttpPost(RoutingConstant.BookTicket)]
         [MapToApiVersion("1.0")]
-        public async Task<IActionResult> AddTicket(string moviename,Tickets ticket)
+        public async Task<IActionResult> AddTicket(string moviename,int ticket)
         {
             try
             {
                 var response = await _ticketService.AddTickets(moviename,ticket);
-                return Ok(response);
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Response = response,
+                    Message = "Ticket Booked Successfully",
+                });
             }
             catch (Exception)
             {
-                return BadRequest("Error Occured while booking ticket!");
+                return BadRequest(new
+                {
+                    StatusCode = Constant.NotFound, Response = Constant.ErrorForBookTicket
+                });
             }
+        }
+        [HttpPost("/api/addmovie")]
+        public async Task<IActionResult> AddMovie(Movies movies)
+        {
+            var respose = await _ticketService.AddMovie(movies);
+            return Ok(respose);
         }
         
     }

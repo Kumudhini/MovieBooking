@@ -10,25 +10,26 @@ using System.Text;
 
 namespace MovieBooking.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    [ApiVersion("1.0",Deprecated = true)]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _movieService;
         private readonly IConfiguration _config;
-        public AuthController(IAuthService movieService, IConfiguration configuration)
+        private readonly ILogger<AuthController> _logger;
+        public AuthController(IAuthService movieService, IConfiguration configuration, ILogger<AuthController> logger)
         {
             _movieService = movieService;
             _config = configuration;
+            _logger = logger;
         }
 
-        [HttpPost("/api/v{version:apiVersion}/moviebooking/register")]
+        [HttpPost(Constants.RoutingConstant.Register)]
         [MapToApiVersion("1.0")]
         public async Task<IActionResult> register([FromBody] Register register)
         {
             try
             {
+                _logger.LogInformation("For New Register Request received for the Id :{id} ",register._id);
                 RegisterValidation validator = new RegisterValidation();
                 var result = validator.Validate(register);
                 if (result.IsValid)
@@ -41,40 +42,47 @@ namespace MovieBooking.Controllers
                     }
                     else
                     {
-                        return BadRequest("Email or LoginId already exists");
+                        _logger.LogError("EmailId or LoginId already Present for the request Id : {id}",register._id);
+                        return BadRequest(new
+                        {
+                            StatusCode = Constants.Constant.NotFound,
+                            Message = Constants.Constant.EmailLoginNotFound,
+                        });
                     }
                 }
                 else
                 {
-                    var error = validator.Validate(register).Errors.ToList();
-                    foreach(var err in error)
-                    {
-                        return BadRequest(err.ErrorMessage);
-                    }
+                    _logger.LogError("Something Went Wrong While process the request Id :{id}",register._id);
                     return BadRequest(StatusCodes.Status500InternalServerError);
                     
                 }
             }
-            catch (Exception)
+            catch (Exception Ex)
             {
+                _logger.LogError(Ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }            
             
 
         }
 
-        [HttpPost("/api/v{version:apiVersion}/moviebooking/login")]
+        [HttpPost(Constants.RoutingConstant.Login)]
         [MapToApiVersion("1.0")]
-
         public async Task<IActionResult> login([FromBody] Login login)
         {
 
             try
             {
+                _logger.LogInformation("Login Request Received for the LoginId : {id}", login.LoginId);
                 var data = await _movieService.Login(login);
                 if (data == null)
                 {
-                    return BadRequest("LoginId Or Password Invalid");
+                    _logger.LogError("LoginId Or Password Invalid for the User :{user}",login.LoginId);
+                    return BadRequest(new
+                    {
+                        StatusCode = Constants.Constant.NotFound,
+                        Message = Constants.Constant.LoginInvalid,
+                    });
                 }
                 var claims = new[]
                     {
@@ -87,7 +95,7 @@ namespace MovieBooking.Controllers
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(claims),
-                    Expires = DateTime.Now.AddDays(1),
+                    Expires = DateTime.Now.AddMinutes(30),
                     SigningCredentials = creds
                 };
 
@@ -95,32 +103,46 @@ namespace MovieBooking.Controllers
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 return Ok(new
                 {
-                    StatusCode = 200,
-                    Message = "Login Successfully",
+                    StatusCode = Constants.Constant.OkResponse,
+                    Message = Constants.Constant.LoginSuccessfull,
                     token = tokenHandler.WriteToken(token),
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest("Error Occured while login!");
+                _logger.LogError(ex.Message);
+                return BadRequest(new
+                {
+                    StatusCode = Constants.Constant.NotFound,
+                    Message = Constants.Constant.ErrorOccureLogin,
+                });
             }
 
         }
 
-        [HttpPut("/api/v{version:apiVersion}/moviebooking/forget")]
+        [HttpPut(Constants.RoutingConstant.ForgetPassword)]
         [MapToApiVersion("1.0")]
-
-        public async Task<IActionResult> forgotPassword([FromBody]Forgot forget)
+        public async Task<IActionResult> forgotPassword(string username, ForgetPassword forget)
         {
             try
             {
-                var response = await _movieService.ForgotPassword(forget);
-                return this.Ok(response);
+                _logger.LogInformation("Forget Password Request Received for the UserName :{id}",username);
+                var response = await _movieService.ForgotPassword(username,forget);
+                return Ok(new
+                {
+                    StatusCode = 200,
+                    Message = response,
+                });
 
             }
-            catch (Exception)
+            catch (Exception Ex)
             {
-                return BadRequest("Error Occured while updating password!");
+                _logger.LogError(Ex.Message);
+                return BadRequest(new
+                {
+                    StatusCode = Constants.Constant.NotFound,
+                    Message = Constants.Constant.ErrorOccurForPasswordUpdate,
+                }) ;
             }
            
         }

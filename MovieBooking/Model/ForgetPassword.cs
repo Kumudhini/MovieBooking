@@ -2,11 +2,8 @@
 
 namespace MovieBooking.Model
 {
-    public class Forgot
+    public class ForgetPassword
     {
-        [BsonElement("email")]
-        public string Email { get; set; } = String.Empty;
-
         [BsonElement("password")]
         public string Password { get; set; } = String.Empty;
 

@@ -1,5 +1,9 @@
-﻿using MongoDB.Driver;
+﻿using AspNetCore.Identity.Mongo.Mongo;
+using Microsoft.Win32;
+using MongoDB.Driver;
 using MovieBooking.Model;
+using System;
+using System.Net.Sockets;
 
 namespace MovieBooking.Services
 {
@@ -7,55 +11,88 @@ namespace MovieBooking.Services
     {
         private IMongoCollection<Tickets> _tickets;
         private IMongoCollection<Movies> _movie;
-        public TicketService(IDatabaseSetting setting, IMongoClient mongoClient)
+        private ILogger<TicketService> _logger;
+        public TicketService(IDatabaseSetting setting, IMongoClient mongoClient, ILogger<TicketService> logger)
         {
             var database = mongoClient.GetDatabase(setting.DatabaseName);
             _tickets = database.GetCollection<Tickets>(setting.TicketCollection);
             _movie = database.GetCollection<Movies>(setting.MovieCollectionName);
+            _logger = logger;
         }
-        public async Task<string> AddTickets(string moviename,Tickets tickets)
+        public async Task<Tickets> AddTickets(string moviename,int tickets)
         {
+            _logger.LogInformation("Ticket Booking Process started for the Movie :{name}",moviename);
             var msg = String.Empty;
-            var noOfTicket = await _movie.Find<Movies>(m => m.MovieName == moviename && m.TheatreName == tickets.TheatreName && m.TotalNumberOfTickets != 0).FirstOrDefaultAsync();
+            var noOfTicket = await _movie.Find<Movies>(m => m.MovieName == moviename && m.TotalNumberOfTickets != 0).FirstOrDefaultAsync();
+
             if (noOfTicket == null)
             {
-                msg = "Movie or theatre not found.";
-                return msg;
+                _logger.LogError("Movie or theatre not found.");
+                return null;
             }
-            if (tickets.NumberOfTickets > noOfTicket.TotalNumberOfTickets)
+            if (tickets > noOfTicket.TotalNumberOfTickets)
             {
-                msg = "Insufficient tickets available.";
-                return msg;
+                _logger.LogError("Insufficient tickets available.");
+                return null;
             }
-            await _tickets.InsertOneAsync(tickets);
-            var totalnumberoftickets = noOfTicket.TotalNumberOfTickets - tickets.NumberOfTickets;
+            var seatNumbers = new List<string>();
+            var ticketList = _tickets.Find<Tickets>(m => m.MovieName == moviename).ToList();
+            int totalTicket = ticketList.Sum(x => x.NumberOfTickets);
+            var lastSeatNumber = totalTicket + 1;
+            for (int i = 0; i <= tickets; i++)
+            {
+                var seatNumber = lastSeatNumber + i;
+                seatNumbers.Add(seatNumber.ToString());
+
+            }
+            Tickets ticketBook = new Tickets
+            {
+                MovieName = moviename,
+                TheatreName = noOfTicket.TheatreName,
+                NumberOfTickets = tickets,
+                SeatNumber = seatNumbers,
+            };
+            await _tickets.InsertOneAsync(ticketBook);
+            _logger.LogInformation("Movie Booked Successfully for the Id");
+            var totalnumberoftickets = noOfTicket.TotalNumberOfTickets - tickets;
             var updateDefinition = Builders<Movies>.Update.Set(m => m.TotalNumberOfTickets, totalnumberoftickets);
             await _movie.UpdateOneAsync(m => m._id == noOfTicket._id, updateDefinition);
 
-            msg = "Tickets booked successfully.";
-            return msg;
+            return ticketBook;
 
         }
 
+        public async Task<Movies> AddMovie(Movies movies)
+        {
+            await _movie.InsertOneAsync(movies);
+            return movies;
+        }
         public async Task<string> UpdateTicketStatus(string movieName, int ticket)
         {
-            var movie = await _movie.Find(m => m.MovieName == movieName).SingleOrDefaultAsync();
             string msg = String.Empty;
-            if (movie == null)
+            try
             {
-                msg = "Movie not found";
-                return msg;
+                var movie = await _movie.Find(m => m.MovieName == movieName).SingleOrDefaultAsync();
+
+                if (movie == null)
+                {
+                    msg = "Movie not found";
+                    return msg;
+                }
+
+                if (ticket == 0)
+                    movie.MovieStatus = "SOLD OUT";
+                else
+                    movie.MovieStatus = "BOOK ASAP";
+
+                _movie.ReplaceOne(m => m.MovieName == movieName, movie);
+                msg = "Ticket status updated successfully";
             }
-
-            if (ticket == 0)
-                movie.MovieStatus = "SOLD OUT";
-            else
-                movie.MovieStatus = "BOOK ASAP";
-
-            _movie.ReplaceOne(m => m.MovieName == movieName, movie);
-            msg = "Ticket status updated successfully";
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
             return msg;
-
         }
         public async Task<List<Tickets>> GetBookedTickets()
         {
@@ -65,16 +102,24 @@ namespace MovieBooking.Services
 
         public async Task<string> DeleteMovie(string movieName, string id)
         {
-            var result = await _movie.DeleteOneAsync(m => m.MovieName == movieName && m._id == id);
             string msg = String.Empty;
-            if (result.DeletedCount == 0)
+            try
             {
-                msg = "Movie not found";
-                return msg;
+                var result = await _movie.DeleteOneAsync(m => m.MovieName == movieName && m._id == id);
+                
+                if (result.DeletedCount == 0)
+                {
+                    msg = "Movie not found";
+                    return msg;
 
+                }
+                msg = "Movie deleted successfully";
             }
-
-            msg = "Movie deleted successfully";
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+            _logger.LogInformation("Movie deleted successfully for the movie :{movie}",movieName);
             return msg;
         }
 

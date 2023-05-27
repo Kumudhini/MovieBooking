@@ -34,20 +34,19 @@ namespace MovieBooking.Services
             return response;
         }
 
-        public async Task<string> ForgotPassword(Forgot forget)
+        public async Task<string> ForgotPassword(string email, ForgetPassword forget)
         {
-            string msg = string.Empty;
-            FilterDefinition<Register> filter = Builders<Register>.Filter.Eq("Email", forget.Email);
+            FilterDefinition<Register> filter = Builders<Register>.Filter.Eq("Email", email);
             if (filter == null)
             {
-                msg = "Invalid Credentials!";
+              string  msg = Constants.Constant.ErrorOccurForPasswordUpdate;
                 return msg;
             }
             else
             {
                 UpdateDefinition<Register> update = Builders<Register>.Update.Set("Password", forget.Password).Set("ConfirmPassword",forget.ConfirmPassword);
                 await _movie.UpdateOneAsync(filter, update);
-                msg = "Password reset successfully!";
+               string msg = Constants.Constant.PasswordResetSuccess;
                 return msg;
             }
         }

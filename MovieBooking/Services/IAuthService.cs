@@ -7,6 +7,6 @@ namespace MovieBooking.Services
        public Task<Register> Create(Register register);
        public bool UniqueCheck(string email, string loginid);
        public Task<Register> Login(Login login);
-       public Task<string> ForgotPassword(Forgot forget);
+       public Task<string> ForgotPassword(string email, ForgetPassword forget);
     }
 }
