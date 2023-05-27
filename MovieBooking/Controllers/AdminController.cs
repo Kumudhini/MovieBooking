@@ -39,7 +39,6 @@ namespace MovieBooking.Controllers
         }
 
         //[Authorize(Roles = "Admin")]
-        //[HttpGet("/api/v{version:apiVersion}/moviebooking/bookedtickets")]
         [HttpGet(Constants.RoutingConstant.BookedTickets)]
         [MapToApiVersion("1.0")]
         public async Task<IActionResult> GetBookedTickets()
@@ -61,7 +60,6 @@ namespace MovieBooking.Controllers
         }
 
         //[Authorize(Roles = "Admin")]
-        //[HttpDelete("/api/v{version:apiVersion}/moviebooking/{movieName}/delete/{id}")]
         [HttpDelete(RoutingConstant.DeleteMovie)]
         [MapToApiVersion("1.0")]
         public async Task<IActionResult> DeleteMovie(string moviename, string id)
