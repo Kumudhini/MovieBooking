@@ -39,7 +39,7 @@ namespace MovieBooking.Services
             var ticketList = _tickets.Find<Tickets>(m => m.MovieName == moviename).ToList();
             int totalTicket = ticketList.Sum(x => x.NumberOfTickets);
             var lastSeatNumber = totalTicket + 1;
-            for (int i = 0; i <= tickets; i++)
+            for (int i = 0; i < tickets; i++)
             {
                 var seatNumber = lastSeatNumber + i;
                 seatNumbers.Add(seatNumber.ToString());
@@ -53,7 +53,7 @@ namespace MovieBooking.Services
                 SeatNumber = seatNumbers,
             };
             await _tickets.InsertOneAsync(ticketBook);
-            _logger.LogInformation("Movie Booked Successfully for the Id");
+            _logger.LogInformation("Movie Booked Successfully");
             var totalnumberoftickets = noOfTicket.TotalNumberOfTickets - tickets;
             var updateDefinition = Builders<Movies>.Update.Set(m => m.TotalNumberOfTickets, totalnumberoftickets);
             await _movie.UpdateOneAsync(m => m._id == noOfTicket._id, updateDefinition);

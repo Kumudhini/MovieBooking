@@ -23,7 +23,6 @@ namespace MovieBooking.Controllers
         }
 
         //[Authorize(Roles = "user")]
-        //[HttpGet("/api/v{version:apiVersion}/moviebooking/allmovies")]
         [HttpGet(RoutingConstant.ViewAllMovies)]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult<Movies>> GetAllMovie()
@@ -38,13 +37,12 @@ namespace MovieBooking.Controllers
                 _logger.LogError(ex.Message);
                 return BadRequest(new
                 {
-                    StatusCode = Constant.OkResponse, Response = Constant.ErrorForGetData
+                    StatusCode = Constant.NotFound, Response = Constant.ErrorForGetData
                 });
             }
         }
 
         //[Authorize(Roles = "user")]
-        // [HttpGet("/api/v{version:apiVersion}/moviebooking/movies/search/{moviename}")]
         [HttpGet(RoutingConstant.SearchByMovieName)]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult<Movies>> Search(string moviename)
