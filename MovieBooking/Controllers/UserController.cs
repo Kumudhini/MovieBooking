@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using MovieBooking.Constants;
 using MovieBooking.Model;
 using MovieBooking.Services;
 using MovieBooking.Validations;
@@ -38,15 +39,19 @@ namespace MovieBooking.Controllers
                     if (unique)
                     {
                         var response = await _movieService.Create(register);
-                        return Ok(response);
+                        return Ok(new
+                        {
+                            StatusCode = Constant.OkResponse,
+                            Message = response,
+                        });
                     }
                     else
                     {
                         _logger.LogError("EmailId or LoginId already Present for the request Id : {id}",register._id);
                         return BadRequest(new
                         {
-                            StatusCode = Constants.Constant.NotFound,
-                            Message = Constants.Constant.EmailLoginNotFound,
+                            StatusCode = Constant.NotFound,
+                            Message = Constant.EmailLoginNotFound,
                         });
                     }
                 }
@@ -66,9 +71,9 @@ namespace MovieBooking.Controllers
 
         }
 
-        [HttpPost(Constants.RoutingConstant.Login)]
+        [HttpGet(Constants.RoutingConstant.Login)]
         [MapToApiVersion("1.0")]
-        public async Task<IActionResult> login([FromBody] Login login)
+        public async Task<IActionResult> login([FromQuery] Login login)
         {
 
             try
@@ -80,8 +85,8 @@ namespace MovieBooking.Controllers
                     _logger.LogError("LoginId Or Password Invalid for the User :{user}",login.LoginId);
                     return BadRequest(new
                     {
-                        StatusCode = Constants.Constant.NotFound,
-                        Message = Constants.Constant.LoginInvalid,
+                        StatusCode = Constant.NotFound,
+                        Message = Constant.LoginInvalid,
                     });
                 }
                 var claims = new[]
@@ -103,8 +108,8 @@ namespace MovieBooking.Controllers
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 return Ok(new
                 {
-                    StatusCode = Constants.Constant.OkResponse,
-                    Message = Constants.Constant.LoginSuccessfull,
+                    StatusCode = Constant.OkResponse,
+                    Message = Constant.LoginSuccessfull,
                     token = tokenHandler.WriteToken(token),
                 });
             }
@@ -113,8 +118,8 @@ namespace MovieBooking.Controllers
                 _logger.LogError(ex.Message);
                 return BadRequest(new
                 {
-                    StatusCode = Constants.Constant.NotFound,
-                    Message = Constants.Constant.ErrorOccureLogin,
+                    StatusCode = Constant.NotFound,
+                    Message = Constant.ErrorOccureLogin,
                 });
             }
 
@@ -140,8 +145,8 @@ namespace MovieBooking.Controllers
                 _logger.LogError(Ex.Message);
                 return BadRequest(new
                 {
-                    StatusCode = Constants.Constant.NotFound,
-                    Message = Constants.Constant.ErrorOccurForPasswordUpdate,
+                    StatusCode = Constant.NotFound,
+                    Message = Constant.ErrorOccurForPasswordUpdate,
                 }) ;
             }
            

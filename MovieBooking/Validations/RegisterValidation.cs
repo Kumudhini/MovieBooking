@@ -13,7 +13,7 @@ namespace MovieBooking.Validations
             RuleFor(x => x.LoginId).NotEmpty().NotNull().WithMessage("LoginId must not be empty or null.");
             RuleFor(x => x.Password).NotEmpty().NotNull().WithMessage("Password must not be empty or null.");
             RuleFor(x => x.ConfirmPassword).NotEmpty().NotNull().WithMessage("ConfirmPassword must not be empty or null.");
-            RuleFor(x => x.ContactNo).NotEmpty().NotNull().WithMessage("ContactNo must not be empty or null.");
+            RuleFor(x => x.ContactNumber).NotEmpty().NotNull().WithMessage("ContactNo must not be empty or null.");
         }
     }
 }

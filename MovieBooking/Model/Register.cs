@@ -29,7 +29,7 @@ namespace MovieBooking.Model
         public string ConfirmPassword { get; set; } = String.Empty;
 
         [BsonElement("contactno")]
-        public int ContactNo { get; set; }
+        public int ContactNumber { get; set; }
 
         [BsonElement("role")]
         public string Role { get; private set; } = "user";

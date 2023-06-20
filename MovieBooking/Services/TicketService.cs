@@ -50,12 +50,12 @@ namespace MovieBooking.Services
                 MovieName = moviename,
                 TheatreName = noOfTicket.TheatreName,
                 NumberOfTickets = tickets,
-                SeatNumber = seatNumbers,
+                SeatNumber = seatNumbers
             };
             await _tickets.InsertOneAsync(ticketBook);
             _logger.LogInformation("Movie Booked Successfully");
-            var totalnumberoftickets = noOfTicket.TotalNumberOfTickets - tickets;
-            var updateDefinition = Builders<Movies>.Update.Set(m => m.TotalNumberOfTickets, totalnumberoftickets);
+            var totalnumberoftickets = noOfTicket.TicketsRemaining - tickets;
+            var updateDefinition = Builders<Movies>.Update.Set(m => m.TicketsRemaining, totalnumberoftickets);
             await _movie.UpdateOneAsync(m => m._id == noOfTicket._id, updateDefinition);
 
             return ticketBook;

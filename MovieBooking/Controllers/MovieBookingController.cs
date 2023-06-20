@@ -45,24 +45,16 @@ namespace MovieBooking.Controllers
         //[Authorize(Roles = "user")]
         [HttpGet(RoutingConstant.SearchByMovieName)]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult<Movies>> Search(string moviename)
+        public async Task<List<Movies>> Search(string moviename)
         {
             try
             {
-                return Ok(new
-                {
-                    StatusCode = Constant.OkResponse,
-                    Response = await _movieService.Search(moviename)
-                });
+                return await _movieService.Search(moviename);
             }
             catch(Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return BadRequest(new
-                {
-                    StatusCode = Constant.NotFound,
-                    Response = Constant.ErrorForGetData,
-                });
+                return null;
             }
 }
 

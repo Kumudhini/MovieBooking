@@ -31,7 +31,7 @@
         public const string ForgetPassword = ApiVersion + "/{username}/forgetpassword";
         public const string ViewAllMovies = ApiVersion + "/all";
         public const string SearchByMovieName = ApiVersion + "/search/{moviename}";
-        public const string BookTicket = ApiVersion + "/{moviename}/add";
+        public const string BookTicket = ApiVersion + "/{moviename}/add/{ticket}";
         public const string UpdateTicketStatus = ApiVersion + "/{movieName}/update/{ticket}";
         public const string DeleteMovie = ApiVersion + "/{moviename}/delete/{id}";
         public const string BookedTickets = ApiVersion + "/moviebooking/bookedtickets";

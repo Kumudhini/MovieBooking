@@ -20,5 +20,8 @@ namespace MovieBooking.Model
 
         [BsonElement("moviestatus")]
         public string MovieStatus { get; set; } = String.Empty;
+
+        [BsonElement("ticketremaining")]
+        public int TicketsRemaining { get; set; }
     }
 }
