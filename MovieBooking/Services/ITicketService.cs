@@ -8,7 +8,7 @@ namespace MovieBooking.Services
 
         public Task<string> UpdateTicketStatus(string movie, int ticket);
 
-        public Task<List<Tickets>> GetBookedTickets();
+        public Task<List<Tickets>> GetBookedTickets(string moviename, string theatername);
 
         public Task<string> DeleteMovie(string movieName, string id);
 

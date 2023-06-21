@@ -94,10 +94,15 @@ namespace MovieBooking.Services
             }
             return msg;
         }
-        public async Task<List<Tickets>> GetBookedTickets()
+        public async Task<List<Tickets>> GetBookedTickets(string moviename,string theatername)
         {
-            var tickets = await _tickets.Find(_ => true).ToListAsync();
-            return tickets;
+            var filter = Builders<Tickets>.Filter.Empty;
+            if (!string.IsNullOrEmpty(moviename) && !string.IsNullOrEmpty(moviename))
+            {
+                filter = Builders<Tickets>.Filter.Regex(field: "MovieName", moviename) & Builders<Tickets>.Filter.Regex(field: "theatreName", theatername);
+
+            }
+            return await _tickets.Find(filter).ToListAsync();
         }
 
         public async Task<string> DeleteMovie(string movieName, string id)
@@ -105,7 +110,7 @@ namespace MovieBooking.Services
             string msg = String.Empty;
             try
             {
-                var result = await _movie.DeleteOneAsync(m => m.MovieName == movieName && m._id == id);
+                var result = await _movie.DeleteOneAsync(m => m.MovieName == movieName && m.TheatreName == id);
                 
                 if (result.DeletedCount == 0)
                 {
