@@ -30,11 +30,18 @@ namespace MovieBooking.Services
                 _logger.LogError("Movie or theatre not found.");
                 return null;
             }
-            if (tickets > noOfTicket.TotalNumberOfTickets)
+            if (tickets > noOfTicket.TicketsRemaining)
             {
                 _logger.LogError("Insufficient tickets available.");
                 return null;
             }
+            var totalTicketRemaining = noOfTicket.TicketsRemaining - tickets;
+            if (totalTicketRemaining < 10)
+                noOfTicket.MovieStatus = "SOLD OUT";
+            else
+                noOfTicket.MovieStatus = "BOOK ASAP";
+
+            _movie.ReplaceOne(m => m.MovieName == moviename, noOfTicket);
             var seatNumbers = new List<string>();
             var ticketList = _tickets.Find<Tickets>(m => m.MovieName == moviename).ToList();
             int totalTicket = ticketList.Sum(x => x.NumberOfTickets);
